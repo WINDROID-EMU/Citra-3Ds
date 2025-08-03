@@ -33,11 +33,11 @@
     <application
         android:name="org.citra.citra_emu.CitraApplication"
         android:label="@string/app_name"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/citra_logo_background_"
         android:appCategory="game"
         android:allowBackup="false"
         android:supportsRtl="true"
-        android:banner="@mipmap/ic_launcher"
+        android:banner="@drawable/citra_logo_background_"
         android:requestLegacyExternalStorage="true">
 
         <meta-data android:name="android.game_mode_config"

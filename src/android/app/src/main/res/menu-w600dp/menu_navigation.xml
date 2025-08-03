@@ -9,7 +9,8 @@
     <item
         android:id="@+id/searchFragment"
         android:icon="@drawable/ic_search"
-        android:title="@string/home_search" />
+        android:title="@string/home_search"
+        android:visible="false" />
 
     <item
         android:id="@+id/gamesFragment"
