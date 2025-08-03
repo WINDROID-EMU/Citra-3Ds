@@ -468,6 +468,7 @@ struct Values {
     // Data Storage
     Setting<bool> use_virtual_sd{true, "use_virtual_sd"};
     Setting<bool> use_custom_storage{false, "use_custom_storage"};
+    Setting<bool> compress_cia_installs{false, "compress_cia_installs"};
 
     // System
     SwitchableSetting<s32> region_value{REGION_VALUE_AUTO_SELECT, "region_value"};
@@ -565,8 +566,8 @@ struct Values {
     Setting<s32> cardboard_y_shift{0, "cardboard_y_shift"};
 
     SwitchableSetting<bool> filter_mode{true, "filter_mode"};
-    SwitchableSetting<std::string> pp_shader_name{"none (builtin)", "pp_shader_name"};
-    SwitchableSetting<std::string> anaglyph_shader_name{"dubois (builtin)", "anaglyph_shader_name"};
+    SwitchableSetting<std::string> pp_shader_name{"None (builtin)", "pp_shader_name"};
+    SwitchableSetting<std::string> anaglyph_shader_name{"Dubois (builtin)", "anaglyph_shader_name"};
 
     SwitchableSetting<bool> dump_textures{false, "dump_textures"};
     SwitchableSetting<bool> custom_textures{false, "custom_textures"};
