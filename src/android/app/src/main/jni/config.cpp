@@ -172,6 +172,7 @@ void Config::ReadValues() {
     ReadSetting("Renderer", Settings::values.bg_red);
     ReadSetting("Renderer", Settings::values.bg_green);
     ReadSetting("Renderer", Settings::values.bg_blue);
+    ReadSetting("Renderer", Settings::values.custom_second_layer_opacity);
     ReadSetting("Renderer", Settings::values.delay_game_render_thread_us);
     ReadSetting("Renderer", Settings::values.disable_right_eye_render);
 
@@ -209,6 +210,9 @@ void Config::ReadValues() {
         static_cast<Settings::PortraitLayoutOption>(sdl2_config->GetInteger(
             "Layout", "portrait_layout_option",
             static_cast<int>(Settings::PortraitLayoutOption::PortraitTopFullWidth)));
+    Settings::values.secondary_display_layout = static_cast<Settings::SecondaryDisplayLayout>(
+        sdl2_config->GetInteger("Layout", "secondary_display_layout",
+                                static_cast<int>(Settings::SecondaryDisplayLayout::None)));
     ReadSetting("Layout", Settings::values.custom_portrait_top_x);
     ReadSetting("Layout", Settings::values.custom_portrait_top_y);
     ReadSetting("Layout", Settings::values.custom_portrait_top_width);

@@ -33,6 +33,7 @@ import org.citra.citra_emu.camera.StillImageCameraHelper.OnFilePickerResult
 import org.citra.citra_emu.contracts.OpenFileResultContract
 import org.citra.citra_emu.databinding.ActivityEmulationBinding
 import org.citra.citra_emu.display.ScreenAdjustmentUtil
+import org.citra.citra_emu.display.SecondaryDisplay
 import org.citra.citra_emu.features.hotkeys.HotkeyUtility
 import org.citra.citra_emu.features.settings.model.BooleanSetting
 import org.citra.citra_emu.features.settings.model.IntSetting
@@ -59,6 +60,15 @@ class EmulationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEmulationBinding
     private lateinit var screenAdjustmentUtil: ScreenAdjustmentUtil
     private lateinit var hotkeyUtility: HotkeyUtility
+    private lateinit var secondaryDisplay: SecondaryDisplay
+
+    private val onShutdown = Runnable {
+        if (intent.getBooleanExtra("launched_from_shortcut", false)) {
+            finishAffinity()
+        } else {
+            this.finish()
+        }
+    }
 
     private val emulationFragment: EmulationFragment
         get() {
@@ -73,10 +83,10 @@ class EmulationActivity : AppCompatActivity() {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
 
         ThemeUtil.setTheme(this)
-
         settingsViewModel.settings.loadSettings()
-
         super.onCreate(savedInstanceState)
+        secondaryDisplay = SecondaryDisplay(this)
+        secondaryDisplay.updateDisplay()
 
         binding = ActivityEmulationBinding.inflate(layoutInflater)
         screenAdjustmentUtil = ScreenAdjustmentUtil(this, windowManager, settingsViewModel.settings)
@@ -99,13 +109,7 @@ class EmulationActivity : AppCompatActivity() {
             windowManager.defaultDisplay.rotation
         )
 
-        EmulationLifecycleUtil.addShutdownHook(hook = {
-            if (intent.getBooleanExtra("launched_from_shortcut", false)) {
-                finishAffinity()
-            } else {
-                this.finish()
-            }
-        })
+        EmulationLifecycleUtil.addShutdownHook(onShutdown)
 
         isEmulationRunning = true
         instance = this
@@ -136,6 +140,11 @@ class EmulationActivity : AppCompatActivity() {
         applyOrientationSettings() // Check for orientation settings changes on runtime
     }
 
+    override fun onStop() {
+        secondaryDisplay.releasePresentation()
+        super.onStop()
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         enableFullscreenImmersive()
@@ -143,6 +152,7 @@ class EmulationActivity : AppCompatActivity() {
 
     public override fun onRestart() {
         super.onRestart()
+        secondaryDisplay.updateDisplay()
         NativeLibrary.reloadCameraDevices()
     }
 
@@ -157,10 +167,13 @@ class EmulationActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        EmulationLifecycleUtil.clear()
+        EmulationLifecycleUtil.removeHook(onShutdown)
         NativeLibrary.playTimeManagerStop()
         isEmulationRunning = false
         instance = null
+        secondaryDisplay.releasePresentation()
+        secondaryDisplay.releaseVD()
+
         super.onDestroy()
     }
 

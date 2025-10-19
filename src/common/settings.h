@@ -54,6 +54,7 @@ enum class PortraitLayoutOption : u32 {
     PortraitOriginal
 };
 
+enum class SecondaryDisplayLayout : u32 { None, TopScreenOnly, BottomScreenOnly, SideBySide };
 /** Defines where the small screen will appear relative to the large screen
  * when in Large Screen mode
  */
@@ -519,6 +520,8 @@ struct Values {
     SwitchableSetting<LayoutOption> layout_option{LayoutOption::Default, "layout_option"};
     SwitchableSetting<bool> swap_screen{false, "swap_screen"};
     SwitchableSetting<bool> upright_screen{false, "upright_screen"};
+    SwitchableSetting<SecondaryDisplayLayout> secondary_display_layout{SecondaryDisplayLayout::None,
+                                                                       "secondary_display_layout"};
     SwitchableSetting<float, true> large_screen_proportion{4.f, 1.f, 16.f,
                                                            "large_screen_proportion"};
     SwitchableSetting<int> screen_gap{0, "screen_gap"};
@@ -582,9 +585,9 @@ struct Values {
     SwitchableSetting<bool> enable_realtime_audio{false, "enable_realtime_audio"};
     SwitchableSetting<float, true> volume{1.f, 0.f, 1.f, "volume"};
     Setting<AudioCore::SinkType> output_type{AudioCore::SinkType::Auto, "output_type"};
-    Setting<std::string> output_device{"auto", "output_device"};
+    Setting<std::string> output_device{"Auto", "output_device"};
     Setting<AudioCore::InputType> input_type{AudioCore::InputType::Auto, "input_type"};
-    Setting<std::string> input_device{"auto", "input_device"};
+    Setting<std::string> input_device{"Auto", "input_device"};
 
     // Camera
     std::array<std::string, Service::CAM::NumCameras> camera_name;

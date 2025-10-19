@@ -66,6 +66,10 @@ bool EmuWindow::IsWithinTouchscreen(const Layout::FramebufferLayout& layout, uns
     }
 #endif
 
+    if (!layout.bottom_screen_enabled) {
+        return false;
+    }
+
     Settings::StereoRenderOption render_3d_mode = Settings::values.render_3d.GetValue();
 
     if (render_3d_mode == Settings::StereoRenderOption::SideBySide ||
@@ -271,6 +275,11 @@ void EmuWindow::UpdateCurrentFramebufferLayout(u32 width, u32 height, bool is_po
             break;
         }
     }
+#ifdef ANDROID
+    if (is_secondary) {
+        layout = Layout::AndroidSecondaryLayout(width, height);
+    }
+#endif
     UpdateMinimumWindowSize(min_size);
 
     if (Settings::values.render_3d.GetValue() == Settings::StereoRenderOption::CardboardVR) {

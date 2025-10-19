@@ -69,6 +69,7 @@
 #include "citra_qt/movie/movie_record_dialog.h"
 #include "citra_qt/multiplayer/state.h"
 #include "citra_qt/qt_image_interface.h"
+#include "citra_qt/qt_swizzle.h"
 #include "citra_qt/uisettings.h"
 #include "common/play_time_manager.h"
 #ifdef ENABLE_QT_UPDATE_CHECKER
@@ -168,6 +169,12 @@ void GMainWindow::ShowCommandOutput(std::string title, std::string message) {
 #else
     std::cout << message << std::endl;
 #endif
+}
+
+bool IsPrerelease() {
+    return ((strstr(Common::g_build_fullname, "alpha") != NULL) ||
+            (strstr(Common::g_build_fullname, "beta") != NULL) ||
+            (strstr(Common::g_build_fullname, "rc") != NULL));
 }
 
 GMainWindow::GMainWindow(Core::System& system_)
@@ -398,12 +405,8 @@ GMainWindow::GMainWindow(Core::System& system_)
 #ifdef ENABLE_QT_UPDATE_CHECKER
     if (UISettings::values.check_for_update_on_start) {
         update_future = QtConcurrent::run([]() -> QString {
-            const bool is_prerelease = // TODO: This can be done better -OS
-                ((strstr(Common::g_build_fullname, "alpha") != NULL) ||
-                 (strstr(Common::g_build_fullname, "beta") != NULL) ||
-                 (strstr(Common::g_build_fullname, "rc") != NULL));
             const std::optional<std::string> latest_release_tag =
-                UpdateChecker::GetLatestRelease(is_prerelease);
+                UpdateChecker::GetLatestRelease(IsPrerelease());
             if (latest_release_tag && latest_release_tag.value() != Common::g_build_fullname) {
                 return QString::fromStdString(latest_release_tag.value());
             }
@@ -3926,8 +3929,13 @@ void GMainWindow::OnEmulatorUpdateAvailable() {
                               .arg(version_string));
     update_prompt.exec();
     if (update_prompt.button(QMessageBox::Yes) == update_prompt.clickedButton()) {
-        QDesktopServices::openUrl(
-            QUrl(QString::fromStdString("https://azahar-emu.org/pages/download/")));
+        std::string update_page_url;
+        if (IsPrerelease()) {
+            update_page_url = "https://github.com/azahar-emu/azahar/releases";
+        } else {
+            update_page_url = "https://azahar-emu.org/pages/download/";
+        }
+        QDesktopServices::openUrl(QUrl(QString::fromStdString(update_page_url)));
     }
 }
 #endif
@@ -4105,6 +4113,11 @@ static Qt::HighDpiScaleFactorRoundingPolicy GetHighDpiRoundingPolicy() {
 }
 
 void LaunchQtFrontend(int argc, char* argv[]) {
+#ifdef __APPLE__
+    // Ensure that the linker doesn't optimize qt_swizzle.mm out of existence.
+    QtSwizzle::Dummy();
+#endif
+
     Common::DetachedTasks detached_tasks;
 
 #if MICROPROFILE_ENABLED

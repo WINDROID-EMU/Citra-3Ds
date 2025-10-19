@@ -864,8 +864,10 @@ bool CIAFile::Close() {
     if (!complete) {
         LOG_ERROR(Service_AM, "CIAFile closed prematurely, aborting install...");
         if (!is_additional_content) {
-            FileUtil::DeleteDirRecursively(
-                GetTitlePath(media_type, container.GetTitleMetadata().GetTitleID()));
+            // Only delete the content folder as there may be user save data in the title folder.
+            const std::string title_content_path =
+                GetTitlePath(media_type, container.GetTitleMetadata().GetTitleID()) + "content/";
+            FileUtil::DeleteDirRecursively(title_content_path);
         }
         return true;
     }
@@ -3253,9 +3255,15 @@ void Module::Interface::BeginImportProgramTemporarily(Kernel::HLERequestContext&
     // Create our CIAFile handle for the app to write to, and while the app writes Citra will store
     // contents out to sdmc/nand
     const FileSys::Path cia_path = {};
-    auto file = std::make_shared<Service::FS::File>(
-        am->system.Kernel(), std::make_unique<CIAFile>(am->system, FS::MediaType::NAND), cia_path);
+    std::shared_ptr<Service::FS::File> file;
+    {
+        auto cia_file = std::make_unique<CIAFile>(am->system, FS::MediaType::NAND);
 
+        AuthorizeCIAFileDecryption(cia_file.get(), ctx);
+
+        file =
+            std::make_shared<Service::FS::File>(am->system.Kernel(), std::move(cia_file), cia_path);
+    }
     am->cia_installing = true;
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
@@ -3446,7 +3454,7 @@ void Module::Interface::GetProgramInfoFromCia(Kernel::HLERequestContext& ctx) {
     title_info.version = tmd.GetTitleVersion();
     title_info.type = tmd.GetTitleType();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(8, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(7, 0);
     rb.Push(ResultSuccess);
     rb.PushRaw<TitleInfo>(title_info);
 }

@@ -170,6 +170,9 @@ bg_red =
 bg_blue =
 bg_green =
 
+# Opacity of second layer when using custom layout option (bottom screen unless swapped). Useful if positioning on top of the first layer.
+custom_second_layer_opacity =
+
 # Whether and how Stereoscopic 3D should be rendered
 # 0 (default): Off, 1: Side by Side, 2: Reverse Side by Side, 3: Anaglyph, 4: Interlaced, 5: Reverse Interlaced, 6: Cardboard VR
 render_3d =
@@ -287,6 +290,15 @@ swap_screen =
 # Expands the display area to include the cutout (or notch) area
 # 0 (default): Off, 1: On
 expand_to_cutout_area =
+
+# Secondary Display Layout
+# What the game should do if a secondary display is connected physically or using
+# Miracast / Chromecast screen mirroring
+# 0 (default) - Use System Default (mirror)
+# 1 - Show Top Screen Only
+# 2 - Show Bottom Screen Only
+# 3 - Show both screens side by side
+secondary_display_layout =
 
 # Screen placement settings when using Cardboard VR (render3d = 4)
 # 30 - 100: Screen size as a percentage of the viewport. 85 (default)

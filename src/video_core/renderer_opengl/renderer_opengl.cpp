@@ -100,7 +100,15 @@ void RendererOpenGL::SwapBuffers() {
     const auto& main_layout = render_window.GetFramebufferLayout();
     RenderToMailbox(main_layout, render_window.mailbox, false);
 
-#ifndef ANDROID
+#ifdef ANDROID
+    // On Android, if secondary_window is defined at all,
+    // it means we have a second display
+    if (secondary_window) {
+        const auto& secondary_layout = secondary_window->GetFramebufferLayout();
+        RenderToMailbox(secondary_layout, secondary_window->mailbox, false);
+        secondary_window->PollEvents();
+    }
+#else
     if (Settings::values.layout_option.GetValue() == Settings::LayoutOption::SeparateWindows) {
         ASSERT(secondary_window);
         const auto& secondary_layout = secondary_window->GetFramebufferLayout();
@@ -108,6 +116,7 @@ void RendererOpenGL::SwapBuffers() {
         secondary_window->PollEvents();
     }
 #endif
+
     if (frame_dumper.IsDumping()) {
         try {
             RenderToMailbox(frame_dumper.GetLayout(), frame_dumper.mailbox, true);
@@ -701,10 +710,7 @@ void RendererOpenGL::DrawScreens(const Layout::FramebufferLayout& layout, bool f
 }
 
 void RendererOpenGL::ApplySecondLayerOpacity(bool isPortrait) {
-    // TODO: Allow for second layer opacity in portrait mode android
-
-    if (!isPortrait &&
-        (Settings::values.layout_option.GetValue() == Settings::LayoutOption::CustomLayout) &&
+    if (Settings::values.layout_option.GetValue() == Settings::LayoutOption::CustomLayout &&
         Settings::values.custom_second_layer_opacity.GetValue() < 100) {
         state.blend.src_rgb_func = GL_CONSTANT_ALPHA;
         state.blend.src_a_func = GL_CONSTANT_ALPHA;
@@ -715,8 +721,7 @@ void RendererOpenGL::ApplySecondLayerOpacity(bool isPortrait) {
 }
 
 void RendererOpenGL::ResetSecondLayerOpacity(bool isPortrait) {
-    if (!isPortrait &&
-        (Settings::values.layout_option.GetValue() == Settings::LayoutOption::CustomLayout) &&
+    if (Settings::values.layout_option.GetValue() == Settings::LayoutOption::CustomLayout &&
         Settings::values.custom_second_layer_opacity.GetValue() < 100) {
         state.blend.src_rgb_func = GL_ONE;
         state.blend.dst_rgb_func = GL_ZERO;
